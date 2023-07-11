@@ -6,9 +6,10 @@ const Rings = () => {
     const itemsRef = useRef([]) as any;
 
     useFrame((state) => {
+        let elapsedTime = state.clock.getElapsedTime();
         for (let i = 0; i < itemsRef.current.length; i++) {
             let mesh = itemsRef.current[i];
-            let z = (i - 7) * 3.5;
+            let z = (i - 7) * 3.5 - ((elapsedTime * 0.4) % 3.5) * 2;
             mesh.position.z = z;
             let dist = Math.abs(z);
             mesh.scale.set(1 - dist * 0.04, 1 - dist * 0.04, 1 - dist * 0.04);

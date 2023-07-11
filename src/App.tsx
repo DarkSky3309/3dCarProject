@@ -1,13 +1,18 @@
 import React, {Suspense} from 'react';
+import * as THREE from "three";
 import {Canvas} from "@react-three/fiber";
 import {CubeCamera, Environment, OrbitControls, PerspectiveCamera} from "@react-three/drei";
 import Ground from "./Ground";
 import Auto from "./Car";
 import Rings from "./Rings";
+import {Boxes} from "./Boxes";
+import {Bloom, ChromaticAberration, EffectComposer} from "@react-three/postprocessing";
+import {BlendFunction} from "postprocessing";
+import FloatingGrid from "./FloatingGrid";
 
 const Car = () => {
     return <>
-        <OrbitControls target={[0, 0.35, 0]} maxPolarAngle={1.45}/>
+        <OrbitControls minDistance={3} maxDistance={7} target={[0, 0.35, 0]} maxPolarAngle={1.45}/>
         <PerspectiveCamera makeDefault position={[3, 2, 5]} fov={50}/>
 
         <color args={[0, 0, 0]} attach="background"/>
@@ -32,14 +37,38 @@ const Car = () => {
 
         <Ground/>
 
-        <CubeCamera resolution={256}  frames={120}>
+        <CubeCamera resolution={256} frames={Infinity}>
             {(texture) => (
                 <>
-                    <Environment map={texture}/>
-                    <Auto/>
-                </>)}
+                    <Environment map={texture} />
+                    <Auto />
+                </>
+            )}
         </CubeCamera>
+
         <Rings/>
+
+        <Boxes/>
+
+        <EffectComposer>
+            <Bloom
+                blendFunction={BlendFunction.ADD}
+                intensity={1}
+                width={300}
+                height={300}
+                kernelSize={5}
+                luminanceThreshold={0.15}
+                luminanceSmoothing={0.025}
+            />
+            <ChromaticAberration
+                blendFunction={BlendFunction.NORMAL}
+                offset={new THREE.Vector2(0.0005, 0.0012)}
+                radialModulation ={false}
+                modulationOffset ={1}
+            />
+        </EffectComposer>
+
+        <FloatingGrid/>
     </>
 }
 
