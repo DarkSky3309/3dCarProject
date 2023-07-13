@@ -1,17 +1,14 @@
-import React, {FC, useEffect, useRef, useState} from 'react';
-import {useFrame, useLoader} from "@react-three/fiber";
+import React, {FC, SetStateAction, useEffect, useRef, useState} from 'react';
+import {useFrame } from "@react-three/fiber";
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
 import {AUTO} from "./enum/enum";
-import {mod} from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
-import {ifError} from "assert";
 
-const Auto: FC<{ carOption: AUTO }> = ({carOption}) => {
+const Auto: FC<{ carOption: AUTO, camera: any, setSelectedDetail: SetStateAction<any> }> = ({carOption, camera, setSelectedDetail}) => {
     const auto = useRef() as React.MutableRefObject<GLTF>;
     const [isLoaded, setIsLoaded] = useState(false);
-    const [canAnimate, setCanAnimate] = useState(false);
     useEffect(() => {
-      setIsLoaded(false)
+      setIsLoaded(false);
     }, [carOption]);
 
     useEffect(() => {
@@ -20,7 +17,7 @@ const Auto: FC<{ carOption: AUTO }> = ({carOption}) => {
             return model;
         }
 
-        load().then(r => auto.current = r).then(() => setIsLoaded(true)).then(() => console.log('car has been loaded'));
+        load().then(r => auto.current = r).then(() => setIsLoaded(true));
     }, [carOption])
 
     useEffect(() => {
@@ -46,16 +43,12 @@ const Auto: FC<{ carOption: AUTO }> = ({carOption}) => {
         });
     }, [auto.current]);
 
-    useEffect(() => {
-        isLoaded ? setCanAnimate(true) : setCanAnimate(false);
-    }, [isLoaded]);
-
     useFrame(
         (state, delta) => {
         if (!isLoaded) return;
         let group = carOption === AUTO.MONSTER ? auto.current.scene.children[0].children[0].children[0].children[0] : auto.current.scene.children[0].children[0].children[0];
         let elapsedTime = state.clock.getElapsedTime() * 2;
-        switch (carOption) {
+            switch (carOption) {
             case AUTO.MONSTER:
                 group.children[8].rotation.x = elapsedTime;
                 group.children[9].rotation.x = elapsedTime;
@@ -73,9 +66,45 @@ const Auto: FC<{ carOption: AUTO }> = ({carOption}) => {
                 group.children[2].rotation.x = elapsedTime;
                 group.children[4].rotation.x = elapsedTime;
                 group.children[6].rotation.x = elapsedTime;
+
                 break;
         }
     } )
+
+    const [pointer, setPointer] = useState<THREE.Vector2>(new THREE.Vector2());
+    const [nearObject, setNearObject] = useState<any>();
+    const raycaster = new THREE.Raycaster();
+
+    const onMouseMove = (event: MouseEvent) => {
+        event.preventDefault();
+        setPointer(new THREE.Vector2(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight ) * 2 + 1
+        ));
+    }
+    useFrame(() => {
+        if (!isLoaded) return;
+        const intersects = raycaster.intersectObjects(auto.current.scene.children)
+        if (intersects.length == 0 || nearObject?.object.parent.name === intersects[0].object.parent?.name) return;
+        setNearObject(() => intersects.reduce((prev, curr) => {
+            if (prev.distance < curr.distance) return prev;
+            else return curr;
+        }))
+
+    })
+
+    useEffect(() => {
+        setSelectedDetail(nearObject?.object.parent.name);
+    }, [nearObject]);
+    raycaster.setFromCamera(pointer, camera);
+
+    useEffect(() => {
+        window.addEventListener('mousemove', onMouseMove);
+
+        return () => {
+            window.removeEventListener('mousemove', onMouseMove);
+        }
+    }, []);
 
     return (
         <>

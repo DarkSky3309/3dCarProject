@@ -1,7 +1,7 @@
-import React, {Dispatch, FC, SetStateAction, Suspense, useEffect, useState} from 'react';
+import React, {Dispatch, FC, SetStateAction, Suspense, useEffect, useRef, useState} from 'react';
 import * as THREE from "three";
 import {Canvas} from "@react-three/fiber";
-import {CubeCamera, Environment, OrbitControls, PerspectiveCamera} from "@react-three/drei";
+import {CubeCamera, Environment, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import Ground from "./Ground";
 import Auto from "./Car";
 import Rings from "./Rings";
@@ -13,13 +13,18 @@ import {AUTO} from "./enum/enum";
 
 const Car: FC<{
     carOption: AUTO,
-    isLoading: boolean,
-    setIsLoading: Dispatch<SetStateAction<boolean>>,
+    setSelectedDetail: Dispatch<SetStateAction<any>>
 }>
-    = ({carOption, setIsLoading, isLoading}) => {
+    = ({carOption, setSelectedDetail}) => {
+    const camera = useRef<THREE.PerspectiveCamera>();
+    const [isLoaded, setIsLoaded] = useState(false);
+    useEffect(() => {
+        if (!camera.current) return;
+        setIsLoaded(true)
+    }, [camera.current]);
     return <>
         <OrbitControls minDistance={3} maxDistance={7} target={[0, 0.35, 0]} maxPolarAngle={1.45}/>
-        <PerspectiveCamera makeDefault position={[3, 2, 5]} fov={50}/>
+        <PerspectiveCamera ref={camera} makeDefault position={[3, 2, 5]} fov={50}/>
 
         <color args={[0, 0, 0]} attach="background"/>
         <spotLight
@@ -42,19 +47,22 @@ const Car: FC<{
         />
 
         <Ground/>
+        {
+            isLoaded &&
+            <CubeCamera resolution={256} frames={Infinity}>
+                {(texture) => (
+                    <>
+                        <Environment map={texture}/>
+                        <Auto setSelectedDetail={setSelectedDetail} camera={camera.current} carOption={carOption}/>
+                    </>
+                )}
+            </CubeCamera>
+        }
 
-        <CubeCamera resolution={256} frames={Infinity}>
-            {(texture) => (
-                <>
-                    <Environment map={texture}/>
-                    <Auto carOption={carOption}/>
-                </>
-            )}
-        </CubeCamera>
 
         <Rings/>
 
-        <Boxes />
+        <Boxes/>
 
         <EffectComposer>
             <Bloom
@@ -80,24 +88,29 @@ const Car: FC<{
 
 const App = () => {
     const [carOption, setCarOption] = useState<AUTO>(AUTO.BLACK_CORVETTE);
+    const [selectedDetail, setSelectedDetail] = useState<any>();
 
     const handleCarOption = (carOption: AUTO) => {
         setCarOption(carOption);
     }
 
-    const [isLoading, setIsLoading] = useState(false);
 
 
     return (
         <Suspense fallback={null}>
             <Canvas shadows>
-                <Car carOption={carOption} isLoading={isLoading} setIsLoading={setIsLoading}/>
+                <Car carOption={carOption} setSelectedDetail={setSelectedDetail}/>
             </Canvas>
             <div className={'btns'}>
-                <button onClick={() => handleCarOption(AUTO.BLACK_CORVETTE)}>Black Corvette</button>
-                <button onClick={() => handleCarOption(AUTO.MONSTER)}>Monster</button>
-                <button onClick={() => handleCarOption(AUTO.BLUE_CORVETTE)}>Blue Corvette</button>
+                    <button className={'btn gradient-box'} onClick={() => handleCarOption(AUTO.BLACK_CORVETTE)}>Black Corvette</button>
+                    <button className={'btn'} onClick={() => handleCarOption(AUTO.MONSTER)}>Monster</button>
+                    <button className={'btn'} onClick={() => handleCarOption(AUTO.BLUE_CORVETTE)}>Blue Corvette</button>
             </div>
+            {selectedDetail && <div className={'detail'}>
+                <div className={'detail__content'}>
+                    <div className={'detail__content__title'}>{selectedDetail}</div>
+                </div>
+            </div>}
         </Suspense>
     );
 }

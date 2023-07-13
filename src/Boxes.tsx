@@ -29,7 +29,6 @@ function Box({ color, isActive } : any) {
     useFrame(
         (state, delta) => {
             time.current += delta * 1.2;
-            if (!isActive) return;
             let newZ = position.z - (time.current);
 
             if(newZ < -10) {
