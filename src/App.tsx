@@ -1,4 +1,4 @@
-import React, {Suspense} from 'react';
+import React, {Dispatch, FC, SetStateAction, Suspense, useEffect, useState} from 'react';
 import * as THREE from "three";
 import {Canvas} from "@react-three/fiber";
 import {CubeCamera, Environment, OrbitControls, PerspectiveCamera} from "@react-three/drei";
@@ -9,8 +9,14 @@ import {Boxes} from "./Boxes";
 import {Bloom, ChromaticAberration, EffectComposer} from "@react-three/postprocessing";
 import {BlendFunction} from "postprocessing";
 import FloatingGrid from "./FloatingGrid";
+import {AUTO} from "./enum/enum";
 
-const Car = () => {
+const Car: FC<{
+    carOption: AUTO,
+    isLoading: boolean,
+    setIsLoading: Dispatch<SetStateAction<boolean>>,
+}>
+    = ({carOption, setIsLoading, isLoading}) => {
     return <>
         <OrbitControls minDistance={3} maxDistance={7} target={[0, 0.35, 0]} maxPolarAngle={1.45}/>
         <PerspectiveCamera makeDefault position={[3, 2, 5]} fov={50}/>
@@ -40,15 +46,15 @@ const Car = () => {
         <CubeCamera resolution={256} frames={Infinity}>
             {(texture) => (
                 <>
-                    <Environment map={texture} />
-                    <Auto />
+                    <Environment map={texture}/>
+                    <Auto carOption={carOption}/>
                 </>
             )}
         </CubeCamera>
 
         <Rings/>
 
-        <Boxes/>
+        <Boxes />
 
         <EffectComposer>
             <Bloom
@@ -63,8 +69,8 @@ const Car = () => {
             <ChromaticAberration
                 blendFunction={BlendFunction.NORMAL}
                 offset={new THREE.Vector2(0.0005, 0.0012)}
-                radialModulation ={false}
-                modulationOffset ={1}
+                radialModulation={false}
+                modulationOffset={1}
             />
         </EffectComposer>
 
@@ -73,11 +79,25 @@ const Car = () => {
 }
 
 const App = () => {
+    const [carOption, setCarOption] = useState<AUTO>(AUTO.BLACK_CORVETTE);
+
+    const handleCarOption = (carOption: AUTO) => {
+        setCarOption(carOption);
+    }
+
+    const [isLoading, setIsLoading] = useState(false);
+
+
     return (
         <Suspense fallback={null}>
             <Canvas shadows>
-                <Car/>
+                <Car carOption={carOption} isLoading={isLoading} setIsLoading={setIsLoading}/>
             </Canvas>
+            <div className={'btns'}>
+                <button onClick={() => handleCarOption(AUTO.BLACK_CORVETTE)}>Black Corvette</button>
+                <button onClick={() => handleCarOption(AUTO.MONSTER)}>Monster</button>
+                <button onClick={() => handleCarOption(AUTO.BLUE_CORVETTE)}>Blue Corvette</button>
+            </div>
         </Suspense>
     );
 }

@@ -5,3 +5,9 @@ html, body, #root, canvas {
     padding: 0;
     overflow: hidden;
 }
+
+.btns{
+    position: absolute;
+    z-index: 100;
+    top: 0;
+}

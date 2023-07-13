@@ -1,8 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, {FC, useEffect, useRef, useState} from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 
-function Box({ color } : any) {
+function Box({ color, isActive } : any) {
     const box = useRef() as React.MutableRefObject<THREE.Mesh>;
     const time = useRef(0);
     const [position, setPosition] = useState(getInitialPosition());
@@ -29,6 +29,7 @@ function Box({ color } : any) {
     useFrame(
         (state, delta) => {
             time.current += delta * 1.2;
+            if (!isActive) return;
             let newZ = position.z - (time.current);
 
             if(newZ < -10) {
@@ -59,7 +60,16 @@ function Box({ color } : any) {
     );
 }
 
-export function Boxes() {
+export const Boxes  = () => {
+    const [isActive, setIsActive] = useState(true);
+    window.onfocus = () => {
+        setIsActive(true);
+    }
+    window.onblur = () => {
+        setIsActive(false);
+    }
+
+
     const [arr] = useState(() => {
         let a = [];
         for(let i = 0; i < 100; i++) a.push(0);
@@ -67,6 +77,6 @@ export function Boxes() {
     });
 
     return <>
-        {arr.map((e, i) => <Box key={i} color={i % 2 === 0 ? [0.4, 0.1, 0.1] : [0.05, 0.15, 0.4] }/>)}
+        {isActive && arr.map((e, i) => <Box isActive={isActive} key={i} color={i % 2 === 0 ? [0.4, 0.1, 0.1] : [0.05, 0.15, 0.4] }/>)}
     </>
 }
