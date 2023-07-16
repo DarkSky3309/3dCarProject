@@ -31,17 +31,56 @@ html, body, #root, canvas {
 
 .detail {
   position: absolute;
+  background-color: rgba(83, 89, 97, 0.5);
   z-index: 100;
-  top: 200px;
-  width: 600px;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  height: 180px;
+  padding: 10px 5px;
   display: flex;
   justify-content: space-between;
-  left: calc(50% - 300px);
   flex-direction: column;
   align-items: center;
   color: white;
   font-size: 24px;
   text-align: center;
+}
+
+.detail__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: inherit;
+}
+
+.detail__content__description {
+  font-size: 18px;
+}
+
+.warning {
+  position: absolute;
+  z-index: 200;
+  width: 100vw;
+  top: 0;
+  height: 100vh;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(26, 27, 28, 0.9);
+}
+.warning .warning__content {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+}
+.warning .warning__content .warning__content__btns {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  width: 60%;
 }
 
 /*# sourceMappingURL=index.css.map */
