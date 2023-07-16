@@ -125,7 +125,10 @@ const App = () => {
   const handleCarOption = (carOption: AUTO) => {
     setCarOption(carOption);
   };
+    useEffect(() => {
+        alert("It takes some time to load model. It can lag sometimes, but just because of high quality model")
 
+    }, []);
   return (
     <Suspense fallback={null}>
       <Canvas shadows>
@@ -134,7 +137,10 @@ const App = () => {
       <div className={"btns"}>
         <button
           className={"btn gradient-box"}
-          onClick={() => handleCarOption(AUTO.BLACK_CORVETTE)}
+          onClick={() => {
+            setSelectedDetail(null)
+            handleCarOption(AUTO.BLACK_CORVETTE);
+          }}
         >
           Black Corvette
         </button>
@@ -158,6 +164,7 @@ const App = () => {
                 className="btn"
                 onClick={() => {
                   setWarning(false);
+                  setSelectedDetail(null)
                   setCarOption(AUTO.BLUE_CORVETTE);
                 }}
               >
